@@ -39,6 +39,11 @@ def token():
 
 
 @pytest.fixture()
+def invalid_token():
+    return 'invalid_token_12345'
+
+
+@pytest.fixture()
 def meme_id(create_meme_endpoint, token):
     payload = {
         "text": "Test Meme",

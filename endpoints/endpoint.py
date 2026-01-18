@@ -15,10 +15,9 @@ class Endpoint:
     def check_that_status_is_201(self):
         assert self.response.status_code == 201
 
-    @allure.step('Check that token exists')
-    def check_token_exists(self):
-
-        assert 'token' in self.json
+    @allure.step('Check that response status is 404')
+    def check_that_status_is_404(self):
+        assert self.response.status_code == 404
 
     @allure.step('Check that text is correct')
     def check_response_text_is_correct(self, expected_text):
@@ -44,4 +43,16 @@ class Endpoint:
     def check_meme_id_matches(self, expected_id):
         assert self.json['id'] == expected_id
 
+    @allure.step('Check that token exists')
+    def check_token_exists(self):
+        assert 'token' in self.json
 
+    @allure.step('Check that the answer is not empty')
+    def check_that_the_answer_is_not_empty(self, get_meme_endpoint):
+        assert get_meme_endpoint.json is not None
+        assert isinstance(get_meme_endpoint.json, list)
+        assert len(get_meme_endpoint.json) > 0
+
+    @allure.step('Check that the meme has been deleted')
+    def check_that_the_meme_has_been_deleted(self, get_meme_endpoint):
+        assert get_meme_endpoint.response.status_code == 404, "После удаления мем должен возвращать 404"
