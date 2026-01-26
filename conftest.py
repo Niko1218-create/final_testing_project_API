@@ -4,6 +4,7 @@ from endpoints.get_meme import GetMeme
 from endpoints.create_meme import CreateMeme
 from endpoints.put_meme import UpdateMeme
 from endpoints.delete_meme import DeleteMeme
+from endpoints.negative_endpoint import NegativeEndpoint
 
 
 @pytest.fixture()
@@ -29,6 +30,11 @@ def update_meme_endpoint():
 @pytest.fixture()
 def delete_meme_endpoint():
     return DeleteMeme()
+
+
+@pytest.fixture()
+def negative_endpoint():
+    return NegativeEndpoint()
 
 
 @pytest.fixture(scope="session")
