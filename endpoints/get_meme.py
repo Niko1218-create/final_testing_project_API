@@ -9,12 +9,11 @@ class GetMeme(Endpoint):
         headers = self.headers.copy()
         headers['Authorization'] = token
         self.response = requests.get(f'{self.url}/meme', headers=headers)
-        self.json = self.response.json()
-
+        self.json = self.safe_get_json()
 
     @allure.step('Get meme by ID')
     def get_meme_by_id(self, meme_id, token):
         headers = {'Authorization': token}
         self.response = requests.get(f'{self.url}/meme/{meme_id}', headers=headers)
-        self.json = self.response.json()
+        self.json = self.safe_get_json()
         return self.response

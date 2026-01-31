@@ -4,7 +4,6 @@ from endpoints.endpoint import Endpoint
 
 
 class NegativeEndpoint(Endpoint):
-    """Класс для негативных тестов"""
 
     @allure.step('Get all memes without token - should be 401')
     def get_all_memes_without_token_401(self):
