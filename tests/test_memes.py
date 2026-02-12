@@ -1,6 +1,7 @@
 import pytest
 import allure
 
+import requests
 
 TEST_DATA = [
     {
@@ -100,12 +101,12 @@ def test_put_meme(update_meme_endpoint, token, meme_id):
     update_meme_endpoint.check_response_info_is_correct(update_data['info'])
 
 
-@pytest.mark.skip
 @allure.story('Delete meme')
 @allure.title('Delete meme by ID')
 @allure.tag('delete')
 def test_delete_meme(delete_meme_endpoint, get_meme_endpoint, token):
-    # Создаем мем через фикстуру
+    # Создаем мем через прямой запрос (без CreateMeme)
+    headers = {'Content-type': 'application/json', 'Authorization': token}
     payload = {
         "text": "Meme to delete",
         "url": "https://lenta.ru/articles/2025/05/14/mem-okak/",
@@ -113,23 +114,29 @@ def test_delete_meme(delete_meme_endpoint, get_meme_endpoint, token):
         "info": {"author": "Tester"}
     }
 
-    # Используем create_meme_endpoint из фикстур
-    from endpoints.create_meme import CreateMeme
-    create_temp = CreateMeme()
-    create_temp.create_new_meme(payload, token)
-    meme_to_delete = create_temp.json['id']
+    response = requests.post(
+        'http://memesapi.course.qa-practice.com/meme',
+        json=payload,
+        headers=headers
+    )
+
+    if response.status_code != 200:
+        pytest.skip(f"Не удалось создать мем: {response.status_code}")
+
+    meme_to_delete = response.json().get('id')
+
+    if not meme_to_delete:
+        pytest.skip("Не удалось получить ID созданного мема")
 
     # Удаляем мем
     delete_meme_endpoint.delete_meme(meme_to_delete, token)
     delete_meme_endpoint.check_that_status_is_200()
 
-    # Пропускаем проверку 404, если она зависает
-    allure.step("Проверка удаления выполнена успешно")
+    # Проверяем что мем удален
+    get_meme_endpoint.get_meme_by_id(meme_to_delete, token)
+    get_meme_endpoint.check_that_status_is_404()
 
-    # Проверяем список мемов
+    # Проверяем что мема нет в общем списке
     get_meme_endpoint.get_all_memes(token)
     get_meme_endpoint.check_that_status_is_200()
-
-    # Проверяем что мема нет в списке
-    if get_meme_endpoint.json:
-        get_meme_endpoint.check_that_meme_is_not_in_list(meme_to_delete)
+    get_meme_endpoint.check_that_meme_is_not_in_list(meme_to_delete)

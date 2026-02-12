@@ -1,3 +1,4 @@
+import requests
 import allure
 from endpoints.endpoint import Endpoint
 
@@ -7,15 +8,23 @@ class Authorize(Endpoint):
 
     @allure.step('Create authorization token')
     def create_token(self, name='Nikolay'):
-        body = {'name': name}
-        self.response = self.session.post(f'{self.url}/authorize', json=body, headers=self.headers)
+        """Позитивный тест - создание токена с валидным именем"""
+        return self.create_token_with_payload({'name': name})
+
+    @allure.step('Create token with payload')
+    def create_token_with_payload(self, payload):
+        """Универсальный метод для создания токена с любыми данными"""
+        self.response = requests.post(f'{self.url}/authorize',
+                                      json=payload,
+                                      headers=self.headers)
         self.json = self.safe_get_json()
-        if self.json:
-            self.token = self.json.get('token')
+        if self.json and 'token' in self.json:
+            self.token = self.json['token']
         return self.response
 
     @allure.step('Check token is alive')
     def check_token_alive(self, token):
-        self.response = self.session.get(f'{self.url}/authorize/{token}', headers=self.headers)
+        self.response = requests.get(f'{self.url}/authorize/{token}',
+                                     headers=self.headers)
         self.json = self.safe_get_json()
         return self.response
